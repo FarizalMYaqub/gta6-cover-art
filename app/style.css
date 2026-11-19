@@ -1,12 +1,112 @@
-html, body { margin: 0; height: 100%; background: #f2f0f4; color: #1d1b22; font: 15px/1.4 system-ui, sans-serif; }
-.app { display: flex; gap: 32px; align-items: center; justify-content: center; height: 100%; padding: 24px; box-sizing: border-box; }
-.controls { display: flex; flex-direction: column; gap: 14px; width: 280px; }
-.controls h1 { margin: 0; font-size: 28px; }
-.controls p { margin: 0; color: #5c5866; }
-label { display: flex; flex-direction: column; gap: 6px; font-weight: 600; }
-input[type=text] { font: inherit; padding: 8px; border: 1px solid #c9c4d1; border-radius: 6px; }
-button { font: inherit; font-weight: 700; padding: 10px; border: 0; border-radius: 6px; background: #1d1b22; color: #fff; cursor: pointer; }
-canvas { width: min(70vh, 60vw); height: min(70vh, 60vw); box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2); }
-body.shot-cover .controls { display: none; }
-body.shot-cover .app { padding: 0; }
-body.shot-cover canvas { width: 100vw; height: 100vh; box-shadow: none; }
+@font-face {
+  font-family: 'Anton';
+  src: url('./fonts/Anton-Regular.ttf') format('truetype');
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Archivo Black';
+  src: url('./fonts/ArchivoBlack-Regular.ttf') format('truetype');
+  font-display: swap;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; min-height: 100%; }
+body {
+  background: #120a1c;
+  color: #f5eefc;
+  font: 15px/1.45 system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
+.app { display: flex; gap: 0; min-height: 100vh; }
+.panel {
+  width: 340px; flex: 0 0 340px; padding: 22px 20px 28px;
+  background: #1b0f2a; border-right: 1px solid #3a2352;
+  overflow-y: auto;
+}
+.panel h1 {
+  margin: 0 0 6px; font-family: 'Anton', sans-serif; font-weight: 400;
+  font-size: 40px; line-height: 0.95; letter-spacing: 1px;
+  color: #ffb347;
+  text-shadow: 3px 3px 0 #ff2e88, 6px 6px 0 rgba(0, 0, 0, 0.55);
+}
+.tagline { margin: 0 0 18px; color: #c9b8dd; font-size: 13.5px; }
+.group { border-top: 1px solid #3a2352; padding: 14px 0 4px; margin-top: 10px; }
+.group h2 {
+  margin: 0 0 10px; font-family: 'Archivo Black', sans-serif; font-weight: 400;
+  font-size: 12px; letter-spacing: 2px; text-transform: uppercase; color: #ff7ad9;
+}
+.hint { margin: 8px 0 0; color: #9d8bb5; font-size: 12.5px; }
+label { display: flex; flex-direction: column; gap: 6px; font-weight: 600; font-size: 13px; margin-bottom: 10px; }
+input[type=text], select {
+  font: inherit; padding: 9px 10px; color: #f5eefc;
+  background: #2a1840; border: 1px solid #4a2f68; border-radius: 8px;
+}
+input[type=text]:focus, select:focus { outline: 2px solid #ff2e88; outline-offset: 1px; }
+input[type=range] { width: 100%; accent-color: #ff2e88; }
+.file-btn {
+  display: block; text-align: center; font-weight: 700; cursor: pointer;
+  padding: 11px; border-radius: 8px; color: #120a1c;
+  background: linear-gradient(90deg, #ffb347, #ff2e88);
+}
+.file-btn input { display: none; }
+.library { list-style: none; margin: 10px 0 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.library li {
+  display: flex; align-items: center; gap: 8px; font-size: 13px;
+  background: #241338; border: 1px solid #3a2352; border-radius: 8px; padding: 6px 8px;
+}
+.library li img { width: 40px; height: 28px; object-fit: cover; border-radius: 4px; }
+.library li span { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.library li button {
+  font: inherit; font-size: 12px; font-weight: 700; cursor: pointer;
+  background: #3a2352; color: #f5eefc; border: 0; border-radius: 6px; padding: 5px 8px;
+}
+.seg { display: flex; gap: 6px; flex-wrap: wrap; }
+.seg button {
+  font: inherit; font-size: 13px; font-weight: 700; cursor: pointer;
+  padding: 8px 10px; border-radius: 8px; border: 1px solid #4a2f68;
+  background: #241338; color: #f5eefc;
+}
+.seg button.active { background: #ff2e88; border-color: #ff2e88; color: #fff; }
+.panel-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.panel-list li {
+  background: #241338; border: 1px solid #3a2352; border-radius: 8px; padding: 8px 10px;
+}
+.panel-list li.selected { border-color: #ff2e88; box-shadow: 0 0 0 1px #ff2e88; }
+.panel-list .row { display: flex; align-items: center; gap: 8px; }
+.panel-list .row strong { font-size: 13px; }
+.panel-list .row select { flex: 1; padding: 6px 8px; }
+.panel-list .row button {
+  font: inherit; font-size: 12px; cursor: pointer; padding: 5px 8px;
+  background: #3a2352; color: #f5eefc; border: 0; border-radius: 6px;
+}
+.panel-list label { margin: 8px 0 0; font-size: 12px; color: #c9b8dd; }
+.exports { display: flex; gap: 6px; flex-wrap: wrap; }
+.exports button {
+  font: inherit; font-weight: 700; cursor: pointer; padding: 10px 12px;
+  border: 0; border-radius: 8px; background: #ffb347; color: #120a1c;
+}
+.exports button:hover { background: #ffc46b; }
+#status { min-height: 20px; margin: 10px 0 0; color: #8fe388; font-size: 13px; }
+.stage {
+  flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 12px; padding: 24px; min-width: 0;
+  background:
+    radial-gradient(700px 500px at 70% 20%, rgba(255, 46, 136, 0.22), transparent 60%),
+    radial-gradient(600px 500px at 20% 90%, rgba(255, 179, 71, 0.16), transparent 60%),
+    #120a1c;
+}
+.stage canvas {
+  max-width: min(78vh, 100%); max-height: 78vh; width: auto; height: auto;
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.08);
+  cursor: grab; touch-action: none; background: #000;
+}
+.stage canvas:active { cursor: grabbing; }
+.stage-hint { margin: 0; color: #9d8bb5; font-size: 13px; }
+
+/* Fixed scenes for screenshots: ?shot=cover shows the cover alone at viewport size. */
+body.shot-cover .panel, body.shot-cover .stage-hint { display: none; }
+body.shot-cover .app { display: block; padding: 0; }
+body.shot-cover .stage { padding: 0; background: #000; }
+body.shot-cover .stage canvas { max-width: none; max-height: none; width: 100vw; height: 100vh; box-shadow: none; }
+/* ?shot=editor keeps the whole editor inside the viewport: the sidebar scrolls on its own. */
+body.shot-editor .app { height: 100vh; overflow: hidden; }
+body.shot-editor .panel { height: 100vh; }
