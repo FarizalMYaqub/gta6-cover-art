@@ -1,7 +1,8 @@
-// Wires the page: the photo library, panel list, layout and grade pickers, drag-to-crop on
-// the preview, and PNG export in the three common post sizes. A `?shot=` query sets up a
-// fixed scene for a screenshot instead (./shots.js).
-import { LAYOUTS, freshPanels, panelAt, renderCover } from './cover.js';
+// Wires the page: the photo library, panel list, layout and grade pickers, caption style
+// controls, per-panel filters, drag-to-crop on the preview, shuffle, and PNG export in the
+// three common post sizes. A `?shot=` query sets up a fixed scene for a screenshot
+// instead (./shots.js).
+import { FILTERS, GRADES, LAYOUTS, freshPanels, panelAt, renderCover } from './cover.js';
 import { runShot } from './shots.js';
 
 const canvas = document.getElementById('cover');
@@ -11,6 +12,9 @@ const titleEl = document.getElementById('title');
 const subtitleEl = document.getElementById('subtitle');
 const libraryEl = document.getElementById('library');
 const panelListEl = document.getElementById('panelList');
+const shadowEl = document.getElementById('shadow');
+const spacingEl = document.getElementById('spacing');
+const spacingValEl = document.getElementById('spacingVal');
 
 const EXPORT_SIZES = {
   '1080x1080': [1080, 1080],
@@ -23,6 +27,7 @@ const state = {
   grade: 'sunset',
   title: titleEl.value,
   subtitle: subtitleEl.value,
+  caption: { outline: 'dark', shadow: true, spacing: 2 },
   photos: [], // { img, name, url }
   panels: freshPanels('hero'),
   selected: 0,
@@ -41,6 +46,10 @@ export function loadImage(url) {
 
 function clamp(v, lo, hi) {
   return Math.min(hi, Math.max(lo, v));
+}
+
+function pick(list) {
+  return list[Math.floor(Math.random() * list.length)];
 }
 
 function panelBox(i) {
@@ -99,6 +108,10 @@ function renderLibrary() {
   });
 }
 
+function filterLabel(filter) {
+  return filter === 'none' ? 'No filter' : filter[0].toUpperCase() + filter.slice(1);
+}
+
 function renderPanels() {
   panelListEl.innerHTML = '';
   state.panels.forEach((crop, i) => {
@@ -152,8 +165,25 @@ function renderPanels() {
     });
     zoomLabel.append(zoom);
     li.append(zoomLabel);
+    const filterLabelEl = document.createElement('label');
+    filterLabelEl.textContent = 'Filter';
+    const filter = document.createElement('select');
+    filter.setAttribute('aria-label', `Filter for panel ${i + 1}`);
+    FILTERS.forEach((f) => {
+      const opt = document.createElement('option');
+      opt.value = f;
+      opt.textContent = filterLabel(f);
+      filter.append(opt);
+    });
+    filter.value = crop.filter || 'none';
+    filter.addEventListener('change', () => {
+      crop.filter = filter.value;
+      redraw();
+    });
+    filterLabelEl.append(filter);
+    li.append(filterLabelEl);
     li.addEventListener('click', (e) => {
-      if (e.target === select || e.target === zoom || e.target === reset) return;
+      if (e.target === select || e.target === zoom || e.target === filter || e.target === reset) return;
       state.selected = i;
       renderPanels();
       redraw();
@@ -165,7 +195,7 @@ function renderPanels() {
 function applyLayout(layout) {
   state.layout = layout;
   state.panels = freshPanels(layout);
-  // Keep the first two library photos as the default fill, so the cover is never empty.
+  // Keep the first library photos as the default fill, so the cover is never empty.
   if (state.photos.length > 0) {
     state.panels.forEach((p, i) => { p.photo = i % state.photos.length; });
   }
@@ -183,6 +213,33 @@ function applyGrade(grade) {
     b.classList.toggle('active', b.dataset.grade === grade);
   });
   redraw();
+}
+
+function applyOutline(outline) {
+  state.caption.outline = outline;
+  document.querySelectorAll('#outlines button').forEach((b) => {
+    b.classList.toggle('active', b.dataset.outline === outline);
+  });
+  redraw();
+}
+
+/** One click, one fresh cover: random layout, grade, panel photos and title outline. */
+function shuffleCover() {
+  const layout = pick(Object.keys(LAYOUTS));
+  const grade = pick(GRADES);
+  state.caption.outline = pick(['dark', 'pink', 'cyan']);
+  applyLayout(layout);
+  applyGrade(grade);
+  applyOutline(state.caption.outline);
+  if (state.photos.length > 0) {
+    state.panels.forEach((p) => {
+      p.photo = Math.floor(Math.random() * state.photos.length);
+      p.filter = pick(FILTERS);
+    });
+  }
+  renderPanels();
+  redraw();
+  statusEl.textContent = `Shuffled: ${layout} layout, ${grade} grade.`;
 }
 
 async function addFiles(files) {
@@ -242,8 +299,21 @@ document.getElementById('photos').addEventListener('change', (e) => {
 document.querySelectorAll('#layouts button').forEach((b) => {
   b.addEventListener('click', () => applyLayout(b.dataset.layout));
 });
+document.getElementById('shuffle').addEventListener('click', shuffleCover);
 document.querySelectorAll('#grades button').forEach((b) => {
   b.addEventListener('click', () => applyGrade(b.dataset.grade));
+});
+document.querySelectorAll('#outlines button').forEach((b) => {
+  b.addEventListener('click', () => applyOutline(b.dataset.outline));
+});
+shadowEl.addEventListener('change', () => {
+  state.caption.shadow = shadowEl.checked;
+  redraw();
+});
+spacingEl.addEventListener('input', () => {
+  state.caption.spacing = Number(spacingEl.value);
+  spacingValEl.textContent = `${spacingEl.value} px`;
+  redraw();
 });
 titleEl.addEventListener('input', () => { state.title = titleEl.value; redraw(); });
 subtitleEl.addEventListener('input', () => { state.subtitle = subtitleEl.value; redraw(); });
@@ -301,7 +371,7 @@ canvas.addEventListener('wheel', (e) => {
 }, { passive: false });
 
 // Test hook for the headless checks: state plus a full-size export.
-window.__vice = { state, exportCover };
+window.__vice = { state, exportCover, shuffleCover };
 
 async function loadSamples() {
   for (const name of ['boulevard', 'pier']) {
@@ -321,6 +391,7 @@ if (shot) {
     state,
     applyLayout,
     applyGrade,
+    applyOutline,
     loadImage,
     sizePreview,
     redraw,
@@ -328,6 +399,15 @@ if (shot) {
     renderPanels,
     canvas,
     setExportSize(sizeKey) { state.exportSize = sizeKey; },
+    setCaption(caption) {
+      Object.assign(state.caption, caption);
+      if (caption.outline) applyOutline(caption.outline);
+      if (typeof caption.shadow === 'boolean') shadowEl.checked = caption.shadow;
+      if (typeof caption.spacing === 'number') {
+        spacingEl.value = String(caption.spacing);
+        spacingValEl.textContent = `${caption.spacing} px`;
+      }
+    },
   });
 } else {
   sizePreview();

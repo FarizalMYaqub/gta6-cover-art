@@ -10,10 +10,12 @@ An entry for the [Make GTA 6 Cover Art](https://make.fun/bounty/gta6-cover-art-0
 ## What it does
 
 - **Your photos, your machine** — add one or more photos from your computer; they are read locally with FileReader and never uploaded.
-- **Multi-panel posters** — three layouts (Hero + strip, Grid 2×2, Comic 3-panel) with white comic gutters and slanted dividers.
+- **Multi-panel posters** — five layouts (Hero + strip, Grid 2×2, Comic 3-panel, Duo split, Strip ×4) with white comic gutters and slanted dividers.
 - **Crop and position each panel** — click a panel in the live preview, drag to move its photo, scroll to zoom, or use the per-panel zoom slider. One photo can fill several panels, or each panel can hold a different one.
-- **Bold poster lettering** — a big outlined title and a spaced subtitle in OFL fonts (Anton and Archivo Black, shipped under `app/fonts/`), plus a sunset sun and sparkles.
-- **Vice City grades** — Vice sunset, Neon nights and Noir colour grades washed over every panel.
+- **A filter per panel** — Warm, Cool or Pop on any panel, on top of the cover grade.
+- **Bold poster lettering** — a big outlined title and a spaced subtitle in OFL fonts (Anton and Archivo Black, shipped under `app/fonts/`), plus a sunset sun and sparkles. Pick the title outline colour (dark, pink, cyan), toggle its drop shadow, and tune its letter spacing.
+- **Vice City grades** — Vice sunset, Neon nights, Noir and Dawn colour grades washed over every panel.
+- **Shuffle** — one click rolls a fresh cover: random layout, grade, panel photos and title outline.
 - **Fast export** — one click exports a PNG in 1080 × 1080, 1080 × 1350 or 1920 × 1080.
 
 ## Try it
@@ -26,6 +28,10 @@ node serve.ts
 The app is plain static files under `app/` and works offline in a desktop browser:
 no network request, no build step. Two sample photos made with an image model
 (`app/samples/`) are included so the cover is never empty.
+
+Screenshots are taken with the app's own fixed scenes (`shots.json` +
+`app/src/shots.js`): `?shot=cover` paints the exported cover alone, `?shot=editor`
+shows the editor with photos loaded.
 
 ## Original work
 

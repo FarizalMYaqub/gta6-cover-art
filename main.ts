@@ -1,8 +1,8 @@
 // Vice Cover Maker — the entrypoint for gta6-cover-art-01 (Node 22, standard library only).
 //
 // The app is plain static files under app/: index.html plus its ES modules, the two OFL
-// fonts and the two sample photos, nothing loaded over the network. This program hands the
-// entry in: it copies app/ and screenshots/ from beside this file into /output (or
+// fonts and the two sample photos, nothing loaded over the network. This program hands
+// the entry in: it copies app/ and screenshots/ from beside this file into /output (or
 // $MAKEFUN_OUTPUT_DIR outside the grader) and writes /output/dossier.json with the
 // vendored make.fun library, so the judge can read the app's source and screenshots.
 //
@@ -19,12 +19,18 @@ import { buildDossier } from './vendor/makefun-app.ts';
 const here = fileURLToPath(new URL('.', import.meta.url));
 const out = process.env.MAKEFUN_OUTPUT_DIR ?? '/output';
 
+// The entry is nothing without its app and its screenshots: refuse a silent empty hand-in.
+if (!existsSync(join(here, 'app', 'index.html'))) {
+  throw new Error('app/index.html is missing — nothing to hand in');
+}
+if (!existsSync(join(here, 'screenshots'))) {
+  throw new Error('screenshots/ is missing — the entry needs its screenshots');
+}
+
 mkdirSync(out, { recursive: true });
 cpSync(join(here, 'app'), join(out, 'app'), { recursive: true });
 mkdirSync(join(out, 'screenshots'), { recursive: true });
-if (existsSync(join(here, 'screenshots'))) {
-  cpSync(join(here, 'screenshots'), join(out, 'screenshots'), { recursive: true });
-}
+cpSync(join(here, 'screenshots'), join(out, 'screenshots'), { recursive: true });
 
 // The gate's own caps: text_max_bytes shapes the dossier text; the other caps refuse an
 // entry the scorer would refuse — at most 4 screenshots of 256 KiB each, app/ at most
@@ -45,8 +51,17 @@ const countFiles = (dir) =>
     (n, e) => n + (e.isDirectory() ? countFiles(join(dir, e.name)) : 1),
     0,
   );
+const appFiles = countFiles(join(out, 'app'));
+const shotFiles = countFiles(join(out, 'screenshots'));
+// The competition wants 3 or 4 screenshots: refuse a hand-in with fewer.
+if (shotFiles < 3 || shotFiles > 4) {
+  throw new Error(`expected 3 or 4 screenshots, found ${shotFiles}`);
+}
+if (appFiles < 1) {
+  throw new Error('no app files were copied — the hand-in is empty');
+}
 console.log(
-  `vice-cover-maker: ${countFiles(join(out, 'app'))} app files, ` +
-    `${countFiles(join(out, 'screenshots'))} screenshots, ` +
+  `vice-cover-maker: ${appFiles} app files, ` +
+    `${shotFiles} screenshots, ` +
     `dossier.json ${statSync(dossierPath).size} bytes -> ${out}`,
 );

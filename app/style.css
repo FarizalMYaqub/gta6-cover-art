@@ -66,6 +66,13 @@ input[type=range] { width: 100%; accent-color: #ff2e88; }
   background: #241338; color: #f5eefc;
 }
 .seg button.active { background: #ff2e88; border-color: #ff2e88; color: #fff; }
+.shuffle {
+  display: block; width: 100%; margin-top: 10px; padding: 11px;
+  font: inherit; font-weight: 700; cursor: pointer; text-align: center;
+  color: #120a1c; border: 0; border-radius: 8px;
+  background: linear-gradient(90deg, #7df9ff, #ff7ad9 55%, #ffb347);
+}
+.shuffle:hover { filter: brightness(1.08); }
 .panel-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
 .panel-list li {
   background: #241338; border: 1px solid #3a2352; border-radius: 8px; padding: 8px 10px;
@@ -79,6 +86,21 @@ input[type=range] { width: 100%; accent-color: #ff2e88; }
   background: #3a2352; color: #f5eefc; border: 0; border-radius: 6px;
 }
 .panel-list label { margin: 8px 0 0; font-size: 12px; color: #c9b8dd; }
+.caption-style {
+  margin-top: 12px; padding: 10px; border: 1px solid #3a2352; border-radius: 8px;
+  background: #241338;
+}
+.caption-label {
+  display: block; margin-bottom: 8px; font-size: 12px; font-weight: 700;
+  letter-spacing: 1px; text-transform: uppercase; color: #c9b8dd;
+}
+.caption-style .check {
+  flex-direction: row; align-items: center; gap: 8px;
+  font-weight: 400; margin: 12px 0 4px;
+}
+.caption-style .check input { width: 16px; height: 16px; accent-color: #ff2e88; }
+.caption-style label:last-child { margin-bottom: 2px; }
+.caption-style label span { color: #ffb347; font-weight: 700; }
 .exports { display: flex; gap: 6px; flex-wrap: wrap; }
 .exports button {
   font: inherit; font-weight: 700; cursor: pointer; padding: 10px 12px;
